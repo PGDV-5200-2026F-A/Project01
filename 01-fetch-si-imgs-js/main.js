@@ -4,6 +4,8 @@ const SI_URL = "https://api.si.edu/openaccess/api/v1.0/search";
 const OBJS_PER_QUERY = 1000;
 
 const QUERY_TERM = "astrolabe";
+// const QUERY_TERM = "orchid";
+// const QUERY_TERM = "political poster";
 
 // list to store objects
 const objects = [];
@@ -58,33 +60,34 @@ document.addEventListener("DOMContentLoaded", async () => {
         // print progress every 25 objects
         if (ocnt % 25 == 0) console.log(ocnt, "/", totalRows);
 
-        // show save button after 32 objects have been added to list
-        if (ocnt == 32) {
+        // show save button after 25 objects have been added to list
+        if (ocnt == 25) {
           const b = document.createElement("button");
           b.innerHTML = "save json";
-          document.body.appendChild(b);
           b.addEventListener("click", () => saveJSON(objects));
+          document.body.appendChild(b);
         }
 
         // the first media item of this row
-        rowMedia = row.content.descriptiveNonRepeating.online_media.media[0];
+        const rowMedia = row.content?.descriptiveNonRepeating?.online_media?.media?.[0];
 
         // if it has a thumbnail, check if it's a valid url
-        if ("thumbnail" in rowMedia) {
+        if (rowMedia && "thumbnail" in rowMedia) {
           const validImg = await checkImageExists(rowMedia.thumbnail);
           if (validImg) {
             // if image is valid push some of the row's data to our objects list
-            // these are the fields we're interested in. might need to be adapted
+            // these are the fields we're interested in. might need to be adapted.
             const toSave = {
               id: row.id,
               url: row.url,
-              source: row.content.descriptiveNonRepeating.data_source ?? "",
-              description: row.content.freetext?.notes?.[0]?.content ?? "",
-              first_image: row.content.descriptiveNonRepeating.online_media.media[0]
+              source: row.content?.descriptiveNonRepeating?.data_source ?? "",
+              description: row.content?.freetext?.notes?.[0]?.content ?? "",
+              first_image: row.content?.descriptiveNonRepeating?.online_media?.media?.[0]?.thumbnail ?? ""
             }
             objects.push(toSave);
           }
         }
+
         // wait a bit to not get kicked out of SI's API
         await sleep(50);
       }
